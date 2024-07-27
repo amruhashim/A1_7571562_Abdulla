@@ -1,0 +1,94 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-4354946673243702654
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa486462e6be1764e89c788ba30e61f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_DiffusionProfileReferences: []
+  m_MaterialReferences:
+  - {fileID: 2100000, guid: 8efb9ab9aae371b42affccef70f714c2, type: 2}
+  - {fileID: 2100000, guid: 5f661a398a5bb6e48803c74fe16612e4, type: 2}
+--- !u!114 &-1027291101208083970
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da692e001514ec24dbc4cca1949ff7e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 11
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Concrete_F_Plaster_A_Layered_Green
+  m_Shader: {fileID: -6465566751694194690, guid: 561e82bef02fdc4499e9bb355b346920,
+    type: 3}
+  m_Parent: {fileID: 2100000, guid: fb5ecc6ebe166be4c92f9ed312a9500d, type: 2}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords:
+  - _HEIGHTMAP0
+  - _LAYER_MAPPING_TRIPLANAR0
+  - _LAYER_MAPPING_TRIPLANAR1
+  - _LAYER_MAPPING_TRIPLANAR_BLENDMASK
+  - _LAYER_MASK_VERTEX_COLOR_MUL
+  - _MASKMAP0
+  - _MASKMAP1
+  - _NORMALMAP0
+  - _NORMALMAP1
+  - _NORMALMAP_TANGENT_SPACE
+  - _NORMALMAP_TANGENT_SPACE0
+  - _NORMALMAP_TANGENT_SPACE1
+  - _NORMALMAP_TANGENT_SPACE2
+  - _NORMALMAP_TANGENT_SPACE3
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap:
+    MotionVector: User
+    RenderType: Opaque
+  disabledShaderPasses:
+  - TransparentDepthPrepass
+  - TransparentDepthPostpass
+  - TransparentBackface
+  - RayTracingPrepass
+  - MOTIONVECTORS
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats: []
+    m_Colors:
+    - _Color_Mat2: {r: 0.7411765, g: 0.8980392, b: 0.5372549, a: 0}
+  m_BuildTextureStacks: []
+--- !u!114 &3826597144945407339
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 7

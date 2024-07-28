@@ -6,56 +6,44 @@ public class Bullet : MonoBehaviour
 {
     private void OnCollisionEnter(Collision collision)
     {
-        if(collision.gameObject.CompareTag("Target"))
+        if (collision.gameObject.CompareTag("PatrolAgent"))
         {
-            CreateBulletImpactEffectStone(collision);
+            //CreateBulletImpactEffect(collision, GlobalReferences.Instance.bulletImpacteffectWall);
             print("hit " + collision.gameObject.name + " !");
+            // Reduce health if the target is an AI agent
+            PatrolAgent agent = collision.gameObject.GetComponent<PatrolAgent>();
+            if (agent != null)
+            {
+                agent.HitByProjectile();
+            }
             Destroy(gameObject);
         }
 
-        if(collision.gameObject.CompareTag("Bottle"))
+        if (collision.gameObject.CompareTag("Bottle"))
         {
             print("hit " + collision.gameObject.name + " !");
             collision.gameObject.GetComponent<Bottle>().Shatter();
+            Destroy(gameObject);  // Ensure bullet is destroyed after collision
         }
 
-        if(collision.gameObject.CompareTag("Metal"))
+        if (collision.gameObject.CompareTag("Metal"))
         {
-            CreateBulletImpactEffectMetal(collision);
+            CreateBulletImpactEffect(collision, GlobalReferences.Instance.bulletImpacteffectMetal);
             print("hit " + collision.gameObject.name + " !");
             Destroy(gameObject);
         }
     }
 
-    
-    void CreateBulletImpactEffectStone(Collision collision)
+    void CreateBulletImpactEffect(Collision collision, GameObject impactEffectPrefab)
     {
         ContactPoint contact = collision.contacts[0];
 
         GameObject hole = Instantiate(
-            GlobalReferences.Instance.bulletImpacteffectWall, 
+            impactEffectPrefab,
             contact.point,
             Quaternion.LookRotation(contact.normal)
-             );
+        );
 
         hole.transform.SetParent(collision.gameObject.transform);
-        
-
-    }
-
-
-    void CreateBulletImpactEffectMetal(Collision collision)
-    {
-        ContactPoint contact = collision.contacts[0];
-
-        GameObject hole = Instantiate(
-            GlobalReferences.Instance.bulletImpacteffectMetal, 
-            contact.point,
-            Quaternion.LookRotation(contact.normal)
-             );
-
-        hole.transform.SetParent(collision.gameObject.transform);
-        
-
     }
 }

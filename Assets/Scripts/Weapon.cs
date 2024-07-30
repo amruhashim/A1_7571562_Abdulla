@@ -55,6 +55,7 @@ public class Weapon : MonoBehaviour
     }
 
     private bool allowReset = true;
+    private bool hasPlayedEmptySound = false;
     private AnimationController animatorController;
 
     private void Awake()
@@ -75,11 +76,21 @@ public class Weapon : MonoBehaviour
     {
         if (GunType == gunType.MachineGun)
         {
-            isShooting = Input.GetKey(KeyCode.Mouse0);
+            if (Input.GetKeyDown(KeyCode.Mouse0))
+            {
+                isShooting = true;
+                hasPlayedEmptySound = false;
+            }
+            else if (Input.GetKeyUp(KeyCode.Mouse0))
+            {
+                isShooting = false;
+                hasPlayedEmptySound = false;
+            }
         }
         else if (GunType == gunType.HandGun || GunType == gunType.ShotGun)
         {
             isShooting = Input.GetKeyDown(KeyCode.Mouse0);
+            hasPlayedEmptySound = false;
         }
 
         if (Input.GetKeyDown(KeyCode.R) && bulletsLeft < magazineSize && !isReloading && accumulatedBullets > 0)
@@ -95,7 +106,11 @@ public class Weapon : MonoBehaviour
             }
             else
             {
-                PlayEmptySound();
+                if (!hasPlayedEmptySound)
+                {
+                    PlayEmptySound();
+                    hasPlayedEmptySound = true;
+                }
             }
         }
 
@@ -109,13 +124,12 @@ public class Weapon : MonoBehaviour
     {
         readyToShoot = false;
 
-        if (audioSource != null && shootingSound != null)
-        {
-            audioSource.PlayOneShot(shootingSound);
-        }
-
         if (GunType == gunType.ShotGun)
         {
+            if (audioSource != null && shootingSound != null)
+            {
+                audioSource.PlayOneShot(shootingSound);
+            }
             animatorController.SetShooting(true);
             for (int i = 0; i < bulletsPerShot; i++)
             {
@@ -130,6 +144,10 @@ public class Weapon : MonoBehaviour
         }
         else // HandGun
         {
+            if (audioSource != null && shootingSound != null)
+            {
+                audioSource.PlayOneShot(shootingSound);
+            }
             animatorController.SetShooting(true);
             FireBullet();
             bulletsLeft--;
@@ -141,7 +159,7 @@ public class Weapon : MonoBehaviour
     {
         yield return new WaitForSeconds(initialDelay);
 
-        while (isShooting && bulletsLeft > 0)
+        while (isShooting && bulletsLeft > 0 && !isReloading)
         {
             if (audioSource != null && shootingSound != null)
             {
@@ -160,8 +178,11 @@ public class Weapon : MonoBehaviour
 
     private void Reload()
     {
+        StopAllCoroutines(); 
+        animatorController.SetShooting(false); 
         animatorController.SetReloading(true);
         isReloading = true;
+        readyToShoot = false;
         if (audioSource != null && reloadSound != null)
         {
             audioSource.PlayOneShot(reloadSound);
@@ -176,6 +197,7 @@ public class Weapon : MonoBehaviour
         bulletsLeft += bulletsToReload;
         accumulatedBullets -= bulletsToReload;
         isReloading = false;
+        readyToShoot = true; 
 
         if (AmmoManager.Instance.ammoDisplay != null)
         {

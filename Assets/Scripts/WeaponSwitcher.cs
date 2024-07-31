@@ -12,14 +12,20 @@ public class WeaponSwitcher : MonoBehaviour
         // Check if the collided object is a weapon box
         if (other.gameObject.CompareTag("WeaponBox"))
         {
-            // Get the weapon box script
             WeaponBox weaponBox = other.gameObject.GetComponent<WeaponBox>();
 
-            // Get the weapon prefab from the weapon box
-            GameObject weaponPrefab = weaponBox.weaponPrefab;
+            // Check if the weapon box is on cooldown
+            if (!weaponBox.isOnCooldown)
+            {
+                // Get the weapon prefab from the weapon box
+                GameObject weaponPrefab = weaponBox.weaponPrefab;
 
-            // Switch to the new weapon
-            SwitchWeapon(weaponPrefab);
+                // Switch to the new weapon
+                SwitchWeapon(weaponPrefab);
+
+                // Start the cooldown on the weapon box
+                weaponBox.StartCooldown();
+            }
         }
     }
 

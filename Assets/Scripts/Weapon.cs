@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Weapon : MonoBehaviour
 {
+    #region FIELDS
+
     [Header("References")]
     public Camera playerCamera;
     public GameObject bulletPrefab;
@@ -39,7 +41,7 @@ public class Weapon : MonoBehaviour
     public float spreadIntensity;
 
     [Header("Ammo Management")]
-    public int accumulatedBullets = 0; // Total bullets collected
+    public int accumulatedBullets = 0; 
 
     [Header("Audio Settings")]
     public AudioClip shootingSound;
@@ -58,6 +60,10 @@ public class Weapon : MonoBehaviour
     private bool hasPlayedEmptySound = false;
     private AnimationController animatorController;
 
+    #endregion
+
+    #region UNITY METHODS
+
     private void Awake()
     {
         readyToShoot = true;
@@ -65,14 +71,43 @@ public class Weapon : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
     }
 
-    void Start()
+    private void Start()
     {
+        // Instantiate the bullet and set its position and rotation
         GameObject instantiated = Instantiate(bulletPrefab, bulletSpawn.position, Quaternion.identity);
         instantiated.transform.SetPositionAndRotation(bulletSpawn.position, Quaternion.LookRotation(bulletSpawn.forward));
+
+        // Destroy the instantiated bullet immediately so it's not visible in the game
+        Destroy(instantiated);
+
+        // Get the AnimationController component
         animatorController = GetComponent<AnimationController>();
     }
 
-    void Update()
+    private void Update()
+    {
+        // Ensure the weapon only reacts to input when the cursor is locked
+        if (Cursor.lockState != CursorLockMode.Locked)
+            return;
+
+        // Handle input for shooting
+        HandleShootingInput();
+
+        // Handle reloading
+        if (Input.GetKeyDown(KeyCode.R) && bulletsLeft < magazineSize && !isReloading && accumulatedBullets > 0)
+        {
+            Reload();
+        }
+
+        // Update ammo display
+        UpdateAmmoDisplay();
+    }
+
+    #endregion
+
+    #region SHOOTING METHODS
+
+    private void HandleShootingInput()
     {
         if (GunType == gunType.MachineGun)
         {
@@ -93,30 +128,17 @@ public class Weapon : MonoBehaviour
             hasPlayedEmptySound = false;
         }
 
-        if (Input.GetKeyDown(KeyCode.R) && bulletsLeft < magazineSize && !isReloading && accumulatedBullets > 0)
-        {
-            Reload();
-        }
-
         if (readyToShoot && isShooting)
         {
             if (bulletsLeft > 0)
             {
                 FireWeapon();
             }
-            else
+            else if (!hasPlayedEmptySound)
             {
-                if (!hasPlayedEmptySound)
-                {
-                    PlayEmptySound();
-                    hasPlayedEmptySound = true;
-                }
+                PlayEmptySound();
+                hasPlayedEmptySound = true;
             }
-        }
-
-        if (AmmoManager.Instance.ammoDisplay != null)
-        {
-            AmmoManager.Instance.ammoDisplay.text = $"{bulletsLeft}/{accumulatedBullets}";
         }
     }
 
@@ -126,10 +148,7 @@ public class Weapon : MonoBehaviour
 
         if (GunType == gunType.ShotGun)
         {
-            if (audioSource != null && shootingSound != null)
-            {
-                audioSource.PlayOneShot(shootingSound);
-            }
+            PlayShootingSound();
             animatorController.SetShooting(true);
             for (int i = 0; i < bulletsPerShot; i++)
             {
@@ -144,10 +163,7 @@ public class Weapon : MonoBehaviour
         }
         else // HandGun
         {
-            if (audioSource != null && shootingSound != null)
-            {
-                audioSource.PlayOneShot(shootingSound);
-            }
+            PlayShootingSound();
             animatorController.SetShooting(true);
             FireBullet();
             bulletsLeft--;
@@ -161,11 +177,7 @@ public class Weapon : MonoBehaviour
 
         while (isShooting && bulletsLeft > 0 && !isReloading)
         {
-            if (audioSource != null && shootingSound != null)
-            {
-                audioSource.PlayOneShot(shootingSound);
-            }
-
+            PlayShootingSound();
             animatorController.SetShooting(true);
             FireBullet();
             bulletsLeft--;
@@ -176,10 +188,48 @@ public class Weapon : MonoBehaviour
         readyToShoot = true;
     }
 
+    private void FireBullet()
+    {
+        muzzleEffect.GetComponent<ParticleSystem>().Play();
+
+        Vector3 shootingDirection = CalculateDirectionAndSpread();
+        GameObject bullet = Instantiate(bulletPrefab, bulletSpawn.position, Quaternion.LookRotation(shootingDirection));
+        bullet.GetComponent<Rigidbody>().velocity = shootingDirection * bulletVelocity;
+
+        StartCoroutine(DestroyBulletAfterTime(bullet, bulletLifeTime));
+    }
+
+    private void ResetShot()
+    {
+        readyToShoot = true;
+        allowReset = true;
+        animatorController.SetShooting(false);
+    }
+
+    private void PlayShootingSound()
+    {
+        if (audioSource != null && shootingSound != null)
+        {
+            audioSource.PlayOneShot(shootingSound);
+        }
+    }
+
+    private void PlayEmptySound()
+    {
+        if (audioSource != null && emptySound != null)
+        {
+            audioSource.PlayOneShot(emptySound);
+        }
+    }
+
+    #endregion
+
+    #region RELOADING METHODS
+
     private void Reload()
     {
-        StopAllCoroutines(); 
-        animatorController.SetShooting(false); 
+        StopAllCoroutines();
+        animatorController.SetShooting(false);
         animatorController.SetReloading(true);
         isReloading = true;
         readyToShoot = false;
@@ -197,71 +247,44 @@ public class Weapon : MonoBehaviour
         bulletsLeft += bulletsToReload;
         accumulatedBullets -= bulletsToReload;
         isReloading = false;
-        readyToShoot = true; 
+        readyToShoot = true;
 
-        if (AmmoManager.Instance.ammoDisplay != null)
-        {
-            AmmoManager.Instance.ammoDisplay.text = $"{bulletsLeft}/{accumulatedBullets}";
-        }
+        UpdateAmmoDisplay();
     }
 
-    private void PlayEmptySound()
-    {
-        if (audioSource != null && emptySound != null)
-        {
-            audioSource.PlayOneShot(emptySound);
-        }
-    }
+    #endregion
+
+    #region AMMO METHODS
 
     public void CollectAmmo(int ammoAmount)
     {
         accumulatedBullets += ammoAmount;
+        UpdateAmmoDisplay();
+    }
+
+    private void UpdateAmmoDisplay()
+    {
         if (AmmoManager.Instance.ammoDisplay != null)
         {
             AmmoManager.Instance.ammoDisplay.text = $"{bulletsLeft}/{accumulatedBullets}";
         }
     }
 
-    private void FireBullet()
-    {
-        muzzleEffect.GetComponent<ParticleSystem>().Play();
+    #endregion
 
-        Vector3 shootingDirection = CalculateDirectionAndSpread().normalized;
-        GameObject bullet = Instantiate(bulletPrefab, bulletSpawn.position, Quaternion.LookRotation(shootingDirection));
-        bullet.GetComponent<Rigidbody>().velocity = shootingDirection * bulletVelocity;
-
-        StartCoroutine(DestroyBulletAfterTime(bullet, bulletLifeTime));
-    }
-
-    private void ResetShot()
-    {
-        readyToShoot = true;
-        allowReset = true;
-        animatorController.SetShooting(false);
-    }
+    #region UTILITY METHODS
 
     public Vector3 CalculateDirectionAndSpread()
     {
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-        RaycastHit hit;
+        // Calculate the forward direction of the camera
+        Vector3 forwardDirection = playerCamera.transform.forward;
 
-        Vector3 targetPoint;
-        if (Physics.Raycast(ray, out hit))
-        {
-            targetPoint = hit.point;
-        }
-        else
-        {
-            targetPoint = ray.GetPoint(100);
-        }
-
-        Vector3 direction = (targetPoint - bulletSpawn.position).normalized;
-
+        // Calculate the spread using camera's right and up directions
         float x = Random.Range(-spreadIntensity, spreadIntensity);
         float y = Random.Range(-spreadIntensity, spreadIntensity);
 
-        Vector3 spread = new Vector3(x, y, 0);
-        Vector3 finalDirection = direction + playerCamera.transform.TransformDirection(spread);
+        Vector3 spread = playerCamera.transform.right * x + playerCamera.transform.up * y;
+        Vector3 finalDirection = (forwardDirection + spread).normalized;
 
         return finalDirection;
     }
@@ -271,4 +294,6 @@ public class Weapon : MonoBehaviour
         yield return new WaitForSeconds(delay);
         Destroy(bullet);
     }
+
+    #endregion
 }

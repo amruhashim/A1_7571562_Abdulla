@@ -5,134 +5,160 @@ using UnityEngine.UI;
 
 public class PatrolAgent : MonoBehaviour
 {
-    public NavMeshAgent agent;
-    public Slider healthBar; // Reference to the health bar Slider
-    public Transform healthBarCanvas; // Reference to the canvas holding the health bar
-    public Camera mainCamera; // Reference to the main camera, set this in the editor
-    public float waitTimeMin = 2f; // Minimum time to wait when idling
-    public float waitTimeMax = 5f; // Maximum time to wait when idling
-    public int maxHits = 10; // Maximum number of hits before resetting
-    public Transform[] waypoints; // Array of waypoints for patrolling
+    #region Serialized Fields
+    [Tooltip("Reference to the health bar Slider.")]
+    public Slider healthBar; // UI Slider to display health
 
-    private Animator animator; // Reference to the Animator component
-    private int hitCount = 0; // Track the number of times hit
-    private bool isWaiting = false;
-    private int currentWaypointIndex = 0; // Track the current waypoint index
-    private Vector3 initialPosition; // Store the initial position of the agent
+    [Tooltip("Reference to the canvas holding the health bar.")]
+    public Transform healthBarCanvas; // Canvas holding the health bar
 
-    void Start()
+    [Tooltip("Reference to the main camera, set this in the editor.")]
+    public Camera mainCamera; // Main camera in the scene
+
+    [Tooltip("Minimum time to wait when idling.")]
+    public float waitTimeMin = 2f; // Minimum wait time at waypoints
+
+    [Tooltip("Maximum time to wait when idling.")]
+    public float waitTimeMax = 5f; // Maximum wait time at waypoints
+
+    [Tooltip("Maximum number of hits before resetting.")]
+    public int maxHits = 10; // Maximum number of hits before death
+
+    [Tooltip("Array of waypoints for patrolling.")]
+    public Transform[] waypoints; // Array of waypoints for the agent to patrol
+    #endregion
+
+    #region Private Fields
+    private NavMeshAgent agent;
+    private Animator animator;
+    private int hitCount = 0; 
+    private bool isWaiting = false; 
+    private int currentWaypointIndex = 0;
+    private Vector3 initialPosition;
+    #endregion
+
+    #region Unity Methods
+    private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
-        animator = GetComponent<Animator>(); // Get the Animator component
+        animator = GetComponent<Animator>();
         InitializeHealthBar(); // Initialize the health bar
         initialPosition = transform.position; // Store the initial position
-        MoveToNextWaypoint();
+        MoveToNextWaypoint(); // Start patrolling
     }
 
-    void Update()
+    private void Update()
     {
+        // Check if the agent has reached the waypoint and is not waiting
         if (!agent.pathPending && agent.remainingDistance < 0.5f && !isWaiting)
         {
-            ReachedWaypoint(agent.transform.position);
+            ReachedWaypoint(agent.transform.position); // Handle waypoint reached
         }
 
-        UpdateHealthBar();
+        UpdateHealthBar(); // Update the health bar orientation
+    }
+    #endregion
+
+    #region Waypoint Methods
+    private void MoveToNextWaypoint()
+    {
+        // Return if there are no waypoints
+        if (waypoints.Length == 0)
+            return;
+
+        // Set the destination to the next waypoint
+        agent.SetDestination(waypoints[currentWaypointIndex].position);
+        animator.SetBool("isWalking", true); // Play walking animation
+        animator.SetBool("isIdle", false); // Ensure idle animation is off
+
+        // Update the waypoint index
+        currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
     }
 
     public void ReachedWaypoint(Vector3 collisionPosition)
     {
-        StartCoroutine(IdleAtPoint(collisionPosition));
+        StartCoroutine(IdleAtPoint(collisionPosition)); // Start idling at the waypoint
     }
 
-    IEnumerator IdleAtPoint(Vector3 collisionPosition)
+    private IEnumerator IdleAtPoint(Vector3 collisionPosition)
     {
-        isWaiting = true;
-        agent.isStopped = true;
-        agent.Warp(collisionPosition); // Stop the agent at the collision position
-        animator.SetBool("isWalking", false);
-        animator.SetBool("isIdle", true); // Set isIdle animation
+        isWaiting = true; // Set waiting flag
+        agent.isStopped = true; // Stop the agent
+        agent.Warp(collisionPosition); // Stop at the exact position
+        animator.SetBool("isWalking", false); // Stop walking animation
+        animator.SetBool("isIdle", true); // Play idle animation
 
+        // Wait for a random time between min and max wait times
         yield return new WaitForSeconds(Random.Range(waitTimeMin, waitTimeMax));
 
-        animator.SetBool("isIdle", false); // Reset isIdle animation
-        agent.isStopped = false;
-        isWaiting = false;
+        animator.SetBool("isIdle", false); // Stop idle animation
+        agent.isStopped = false; // Resume movement
+        isWaiting = false; // Reset waiting flag
 
-        MoveToNextWaypoint();
+        MoveToNextWaypoint(); // Move to the next waypoint
     }
+    #endregion
 
-    void MoveToNextWaypoint()
-    {
-        if (waypoints.Length == 0)
-            return;
-
-        agent.SetDestination(waypoints[currentWaypointIndex].position);
-        animator.SetBool("isWalking", true);
-        animator.SetBool("isIdle", false);
-
-        currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
-    }
-
-    IEnumerator HandleDeath()
-    {
-        StopAllCoroutines(); // Stop all coroutines, including patrolling
-        agent.isStopped = true; // Stop the agent's movement
-        animator.SetBool("isWalking", false);
-        animator.Rebind(); // Reset animator state
-
-        isWaiting = false; // Reset the isWaiting flag
-
-
-        ResetAgentPosition();
-        hitCount = 0; // Reset hit count
-        UpdateHealthBar(); // Reset the health bar
-
-        yield return new WaitForSeconds(1f); // Delay agent movement
-
-        RespawnAgent();
-    }
-
-    void RespawnAgent()
-    {
-        agent.isStopped = false; // Ensure the agent is active again
-        MoveToNextWaypoint(); // Resume patrolling
-    }
-
+    #region Health Methods
     public void HitByProjectile()
     {
-        hitCount++;
+        hitCount++; // Increment hit counter
         if (hitCount >= maxHits)
         {
-            StartCoroutine(HandleDeath());
+            StartCoroutine(HandleDeath()); // Handle death if max hits reached
         }
         else
         {
-            UpdateHealthBar();
+            UpdateHealthBar(); // Update health bar if not dead
         }
     }
 
-    void ResetAgentPosition()
+    private IEnumerator HandleDeath()
+    {
+        StopAllCoroutines(); // Stop all running coroutines
+        agent.isStopped = true; // Stop the agent's movement
+        animator.SetBool("isWalking", false); // Stop walking animation
+        animator.Rebind(); // Reset animator state
+
+        isWaiting = false; // Reset the waiting flag
+
+        ResetAgentPosition(); // Reset agent position
+        hitCount = 0; // Reset hit count
+        UpdateHealthBar(); // Reset health bar
+
+        yield return new WaitForSeconds(1f); // Delay before respawning
+
+        RespawnAgent(); // Respawn the agent
+    }
+
+    private void RespawnAgent()
+    {
+        agent.isStopped = false; // Resume the agent's movement
+        MoveToNextWaypoint(); // Resume patrolling
+    }
+
+    private void ResetAgentPosition()
     {
         agent.Warp(initialPosition); // Immediately set the agent's position to its initial position
     }
 
-    void InitializeHealthBar()
+    private void InitializeHealthBar()
     {
-        healthBar.maxValue = maxHits;
-        healthBar.minValue = 0;
+        healthBar.maxValue = maxHits; // Set max value of health bar
+        healthBar.minValue = 0; // Set min value of health bar
         healthBar.value = maxHits; // Start with full health
     }
 
-    void UpdateHealthBar()
+    private void UpdateHealthBar()
     {
-        healthBar.value = maxHits - hitCount;
+        healthBar.value = maxHits - hitCount; // Update health bar value
 
         // Make the health bar face the camera
         Vector3 directionToCamera = mainCamera.transform.position - healthBarCanvas.position;
-        directionToCamera.x = directionToCamera.z = 0; // Keep only the y-axis rotation
-        healthBarCanvas.LookAt(mainCamera.transform.position - directionToCamera); // Look at a point aligned on the y-axis
+        directionToCamera.x = directionToCamera.z = 0;
+        healthBarCanvas.LookAt(mainCamera.transform.position - directionToCamera); 
 
-        // Adjust the rotation by 180 degrees on the y-axis if needed
-        healthBarCanvas.Rotate(0, 0, 0);
+        healthBarCanvas.Rotate(0, 180, 0);
     }
+    #endregion
 }

@@ -35,4 +35,30 @@ public class AnimationController : MonoBehaviour
     {
         animator.SetBool("isReloading", isReloading);
     }
+
+    public void SetThrowing(bool isThrowing)
+    {
+        animator.SetBool("isThrowing", isThrowing);
+    }
+
+    // This method will be called by an AnimationEvent at the point in the animation where the grenade should be thrown
+    public void ThrowGrenade()
+    {
+        // Call the grenade throw method on your Grenade script here
+        GrenadeManager grenadeManager = GetComponent<GrenadeManager>();
+        if (grenadeManager != null)
+        {
+            grenadeManager.OnThrowAnimationEvent();
+        }
+    }
+
+    // This method will be called by an AnimationEvent at the end of the throwing animation
+    public void ThrowingAnimationEnd()
+    {
+        GrenadeManager grenadeManager = GetComponent<GrenadeManager>();
+        if (grenadeManager != null)
+        {
+            grenadeManager.OnThrowAnimationEnd();
+        }
+    }
 }

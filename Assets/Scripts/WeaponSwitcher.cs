@@ -2,62 +2,140 @@ using UnityEngine;
 
 public class WeaponSwitcher : MonoBehaviour
 {
-    public Transform handHolder; // The transform that will hold the weapon
+    public Transform handHolder; // The transform that will hold the weapon or grenade hand
     public Weapon currentWeapon; // The current weapon being held
+    public GameObject grenadeHandPrefab; // The grenade hand model prefab
     public Camera playerCamera; // Reference to the player's camera
     public Movement playerMovement; // Reference to the player's movement script
 
+    private GameObject grenadeHandInstance; // Instance of the grenade hand model
+    private bool isGrenadeActive = false; // Whether the grenade hand is active
+
+    #region Initialization
+    private void Start()
+    {
+        grenadeHandInstance = Instantiate(grenadeHandPrefab, handHolder);
+        grenadeHandInstance.transform.localPosition = new Vector3(0, -1.45899999f, -0.479999989f);
+        grenadeHandInstance.transform.localRotation = Quaternion.identity;
+        grenadeHandInstance.SetActive(false);
+
+        AnimationController grenadeAnimationController = grenadeHandInstance.GetComponent<AnimationController>();
+        if (grenadeAnimationController != null)
+        {
+            grenadeAnimationController.movementScript = playerMovement;
+        }
+
+        AmmoManager.Instance.throwForceSlider.gameObject.SetActive(false);
+    }
+    #endregion
+
+    #region Update
+    private void Update()
+    {
+        HandleInput();
+    }
+    #endregion
+
+    #region Input Handling
+    private void HandleInput()
+    {
+        if (Input.GetKeyDown(KeyCode.G) || Input.GetAxis("Mouse ScrollWheel") != 0)
+        {
+            if (isGrenadeActive)
+            {
+                SwitchToCurrentWeapon();
+            }
+            else
+            {
+                SwitchToGrenadeHand();
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            if (isGrenadeActive)
+            {
+                SwitchToCurrentWeapon();
+            }
+        }
+    }
+    #endregion
+
+    #region Trigger Handling
     private void OnTriggerEnter(Collider other)
     {
-        // Check if the collided object is a weapon box
         if (other.gameObject.CompareTag("WeaponBox"))
         {
             WeaponBox weaponBox = other.gameObject.GetComponent<WeaponBox>();
 
-            // Check if the weapon box is on cooldown
             if (!weaponBox.isOnCooldown)
             {
-                // Get the weapon prefab from the weapon box
                 GameObject weaponPrefab = weaponBox.weaponPrefab;
-
-                // Switch to the new weapon
                 SwitchWeapon(weaponPrefab);
-
-                // Start the cooldown on the weapon box
                 weaponBox.StartCooldown();
             }
         }
     }
+    #endregion
 
+    #region Weapon Switching
     private void SwitchWeapon(GameObject weaponPrefab)
     {
-        // Destroy the current weapon
         if (currentWeapon != null)
         {
             Destroy(currentWeapon.gameObject);
         }
 
-        // Instantiate the new weapon
-        GameObject newWeapon = Instantiate(weaponPrefab, handHolder);
+        if (isGrenadeActive)
+        {
+            grenadeHandInstance.SetActive(false);
+            isGrenadeActive = false;
+        }
 
-        // Set the new weapon's local position and rotation to match the hand holder
+        GameObject newWeapon = Instantiate(weaponPrefab, handHolder);
         newWeapon.transform.localPosition = new Vector3(0, -1.45899999f, -0.479999989f);
         newWeapon.transform.localRotation = Quaternion.identity;
 
-        // Set the new weapon as the current weapon
         currentWeapon = newWeapon.GetComponent<Weapon>();
-
-        // Assign the player camera to the new weapon
         currentWeapon.playerCamera = playerCamera;
 
-        // Assign the player movement script to the new weapon's AnimationController
         AnimationController animationController = newWeapon.GetComponent<AnimationController>();
         if (animationController != null)
         {
             animationController.movementScript = playerMovement;
         }
 
-        // Update the ammo display
         AmmoManager.Instance.UpdateAmmoDisplay(currentWeapon);
+        AmmoManager.Instance.throwForceSlider.gameObject.SetActive(false);
+        AmmoManager.Instance.ammoDisplay.gameObject.SetActive(true);
     }
+
+    private void SwitchToGrenadeHand()
+    {
+        if (currentWeapon != null)
+        {
+            currentWeapon.gameObject.SetActive(false);
+        }
+
+        grenadeHandInstance.SetActive(true);
+        isGrenadeActive = true;
+        AmmoManager.Instance.ammoDisplay.gameObject.SetActive(false); 
+    }
+
+    private void SwitchToCurrentWeapon()
+    {
+        if (grenadeHandInstance != null)
+        {
+            grenadeHandInstance.SetActive(false);
+        }
+
+        if (currentWeapon != null)
+        {
+            currentWeapon.gameObject.SetActive(true);
+        }
+
+        isGrenadeActive = false;
+        AmmoManager.Instance.ammoDisplay.gameObject.SetActive(true); 
+    }
+    #endregion
 }

@@ -39,7 +39,11 @@ public class WeaponSwitcher : MonoBehaviour
     #region Input Handling
     private void HandleInput()
     {
-        if (Input.GetKeyDown(KeyCode.G) || Input.GetAxis("Mouse ScrollWheel") != 0)
+        if (Input.GetKeyDown(KeyCode.G) && !isGrenadeActive)
+        {
+            SwitchToGrenadeHand();
+        }
+        else if (Input.GetAxis("Mouse ScrollWheel") != 0)
         {
             if (isGrenadeActive)
             {

@@ -10,6 +10,9 @@ public class BreakObject : MonoBehaviour
     [Tooltip("Audio clip to play when the object breaks.")]
     public AudioClip breakSound;
 
+    [Tooltip("The outer box collider to be turned off after breaking.")]
+    public Collider outerBoxCollider;
+
     private AudioSource audioSource;
     private bool isBroken = false;  // Flag to check if the object is already broken
 
@@ -43,6 +46,12 @@ public class BreakObject : MonoBehaviour
         foreach (Rigidbody part in allParts)
         {
             part.isKinematic = false;
+        }
+
+        // Turn off the outer box collider
+        if (outerBoxCollider != null)
+        {
+            outerBoxCollider.enabled = false;
         }
 
         // Play the breaking sound

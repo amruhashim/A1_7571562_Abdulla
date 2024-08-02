@@ -2,8 +2,8 @@ using UnityEngine;
 
 public class WeaponSwitcher : MonoBehaviour
 {
-    public Transform handHolder; // The transform that will hold the weapon or grenade hand
-    public Weapon currentWeapon; // The current weapon being held
+    public Transform handHolder; 
+    public Weapon currentWeapon; 
     public GameObject grenadeHandPrefab; // The grenade hand model prefab
     public Camera playerCamera; // Reference to the player's camera
     public Movement playerMovement; // Reference to the player's movement script

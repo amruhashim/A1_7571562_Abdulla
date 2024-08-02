@@ -7,7 +7,7 @@ public class AmmoManager : MonoBehaviour
     public static AmmoManager Instance { get; set; }
     public TextMeshProUGUI ammoDisplay;
     public Slider throwForceSlider;
-    public TextMeshProUGUI chargeTimeDisplay;  // New field for displaying charge time
+    public TextMeshProUGUI chargeTimeDisplay;  
 
     private void Awake()
     {

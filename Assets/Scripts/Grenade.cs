@@ -39,7 +39,6 @@ public class Grenade : MonoBehaviour
         {
             audioSource.PlayOneShot(bounceSound);
 
-            // Add some visual effects to make the grenade appear more bouncy
             if (bounceCount < maxBounces)
             {
                 float bounceForce = initialBounceForce * Mathf.Pow(bounceReductionFactor, bounceCount);
@@ -62,7 +61,7 @@ public class Grenade : MonoBehaviour
         Collider[] colliders = Physics.OverlapSphere(transform.position, explosionRadius);
         foreach (Collider nearbyObject in colliders)
         {
-            //avoid player 
+            // avoid player 
             if (nearbyObject.CompareTag("Player"))
                 continue;
 

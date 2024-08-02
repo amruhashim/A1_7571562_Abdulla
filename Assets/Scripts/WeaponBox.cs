@@ -76,9 +76,9 @@ public class WeaponBox : MonoBehaviour
     #region Utility Methods
     private void UpdateCooldownCanvas()
     {
-        // Orient the cooldown canvas to face the camera
+        // Rotate the cooldown canvas to face the camera
         Vector3 directionToCamera = mainCamera.transform.position - cooldownCanvas.transform.position;
-        directionToCamera.x = directionToCamera.z = 0; // Keep only the y-axis rotation
+        directionToCamera.x = directionToCamera.z = 0; 
         cooldownCanvas.transform.LookAt(mainCamera.transform.position - directionToCamera);
         cooldownCanvas.transform.Rotate(0, 180, 0);
     }

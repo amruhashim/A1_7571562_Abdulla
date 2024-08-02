@@ -5,7 +5,7 @@ using UnityEngine;
 public class AnimationController : MonoBehaviour
 {
     private Animator animator;
-    public Movement movementScript;  // Public reference to Movement script
+    public Movement movementScript;  // Reference to Movement script
 
     private void Awake()
     {
@@ -44,7 +44,6 @@ public class AnimationController : MonoBehaviour
     // This method will be called by an AnimationEvent at the point in the animation where the grenade should be thrown
     public void ThrowGrenade()
     {
-        // Call the grenade throw method on your Grenade script here
         GrenadeManager grenadeManager = GetComponent<GrenadeManager>();
         if (grenadeManager != null)
         {

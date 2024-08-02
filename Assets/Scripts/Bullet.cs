@@ -8,7 +8,6 @@ public class Bullet : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("PatrolAgent"))
         {
-            //CreateBulletImpactEffect(collision, GlobalReferences.Instance.bulletImpacteffectWall);
             print("hit " + collision.gameObject.name + " !");
             // Reduce health if the target is an AI agent
             PatrolAgent agent = collision.gameObject.GetComponent<PatrolAgent>();
@@ -32,7 +31,6 @@ public class Bullet : MonoBehaviour
         }
 
 
-
         if (collision.gameObject.CompareTag("Metal"))
         {
             CreateBulletImpactEffect(collision, GlobalReferences.Instance.bulletImpacteffectMetal);
@@ -47,6 +45,7 @@ public class Bullet : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
 
     void CreateBulletImpactEffect(Collision collision, GameObject impactEffectPrefab)
     {

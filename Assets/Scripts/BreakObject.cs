@@ -54,7 +54,7 @@ public class BreakObject : MonoBehaviour
             outerBoxCollider.enabled = false;
         }
 
-        // Play the breaking sound
+        // Play the breaking sound 
         if (breakSound != null)
         {
             audioSource.PlayOneShot(breakSound);

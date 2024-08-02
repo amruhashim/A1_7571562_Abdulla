@@ -19,12 +19,19 @@ public class Bullet : MonoBehaviour
             Destroy(gameObject);
         }
 
-        if (collision.gameObject.CompareTag("Bottle"))
+
+        if (collision.gameObject.CompareTag("Breakable"))
         {
             print("hit " + collision.gameObject.name + " !");
-            collision.gameObject.GetComponent<Bottle>().Shatter();
-            Destroy(gameObject);  // Ensure bullet is destroyed after collision
+            BreakObject breakable = collision.gameObject.GetComponent<BreakObject>();
+            if (breakable != null)
+            {
+                breakable.Break();
+            }
+            Destroy(gameObject);  
         }
+
+
 
         if (collision.gameObject.CompareTag("Metal"))
         {

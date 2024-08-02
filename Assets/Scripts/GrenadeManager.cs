@@ -4,13 +4,13 @@ using System.Collections;
 
 public class GrenadeManager : MonoBehaviour
 {
-    [SerializeField] private float maxThrowForce = 1500f;
+    [SerializeField] private float maxThrowForce = 25f;
     [SerializeField] private float forceMultiplier = 1f;
     [SerializeField] private GameObject grenadePrefab;
     [SerializeField] private Transform throwableSpawn;
-    [SerializeField] public float maxChargeTime = 6.0f;  // Max time to charge the grenade
-    [SerializeField] private float chargeSpeedMultiplier = 2.0f;  // Multiplier to increase charge speed
-    [SerializeField] private float sliderResetDuration = 0.5f;  // Time to reset slider to zero
+    [SerializeField] public float maxChargeTime = 6.0f; // Max time to charge the grenade
+    [SerializeField] private float chargeSpeedMultiplier = 2.0f; // Multiplier to increase charge speed
+    [SerializeField] private float sliderResetDuration = 0.5f; // Time to reset slider to zero
 
     private float throwForce = 0f;
     private float chargeTime = 0f;
@@ -18,11 +18,10 @@ public class GrenadeManager : MonoBehaviour
     private bool canThrow = true;  // Flag to prevent charging another grenade until animation finishes
     private Animator animator;
 
-
     void Start()
     {
         animator = GetComponent<Animator>();
-        AmmoManager.Instance.throwForceSlider.gameObject.SetActive(false); // Assuming Animator is attached to the same GameObject
+        AmmoManager.Instance.throwForceSlider.gameObject.SetActive(false);
     }
 
     void Update()
@@ -30,6 +29,7 @@ public class GrenadeManager : MonoBehaviour
         // Ensure the grenade only reacts to input when the cursor is locked
         if (Cursor.lockState != CursorLockMode.Locked)
             return;
+
         if (Input.GetMouseButtonDown(0) && canThrow)
         {
             StartCharging();
@@ -107,6 +107,7 @@ public class GrenadeManager : MonoBehaviour
         Rigidbody grenadeRb = grenade.GetComponent<Rigidbody>();
         grenadeRb.AddForce(Camera.main.transform.forward * (throwForce * forceMultiplier), ForceMode.Impulse);
         Grenade grenadeScript = grenade.GetComponent<Grenade>();
+        grenadeScript.SetInitialBounceForce(throwForce); // Set the initial bounce force based on throw force
         grenadeScript.DelayedExplosion(delayTime);
     }
 }

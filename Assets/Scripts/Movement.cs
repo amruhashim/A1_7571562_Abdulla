@@ -46,7 +46,8 @@ public class Movement : MonoBehaviour
     public bool isMoving;
 
     private RaycastHit[] groundHits = new RaycastHit[10]; 
-    private float previousVelocityY;
+    
+    // private float previousVelocityY;
 
     #endregion
 
@@ -70,18 +71,18 @@ public class Movement : MonoBehaviour
 
     private void Start()
     {
-        previousVelocityY = rigidBody.velocity.y;
+       // previousVelocityY = rigidBody.velocity.y;
     }
 
     private void Update()
     {
-        // Track vertical velocity changes
-        float currentVelocityY = rigidBody.velocity.y;
-        float velocityChangeY = currentVelocityY - previousVelocityY;
+        // Track vertical velocity changes for debuging
+        //float currentVelocityY = rigidBody.velocity.y;
+        //float velocityChangeY = currentVelocityY - previousVelocityY;
 
-        Debug.Log($"Velocity change Y: {velocityChangeY:F4}");
+        // Debug.Log($"Velocity change Y: {velocityChangeY:F4}");
 
-        previousVelocityY = currentVelocityY;
+       // previousVelocityY = currentVelocityY;
 
         // Play landing sound if player was airborne and is now grounded
         if (!wasGrounded && grounded && !isJumping)

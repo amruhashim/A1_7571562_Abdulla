@@ -31,12 +31,12 @@ public class AmmoManager : MonoBehaviour
         if (throwForceSlider != null)
         {
             throwForceSlider.value = value;
-            throwForceSlider.maxValue = 6.0f; // Ensure max value is set to 6
+            throwForceSlider.maxValue = 6.0f; 
         }
 
         if (chargeTimeDisplay != null)
         {
-            chargeTimeDisplay.text = $"{value:F1}";  // Display charge time as a number
+            chargeTimeDisplay.text = $"{value:F1}";  // Display charge time 
         }
     }
 }

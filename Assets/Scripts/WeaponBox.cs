@@ -34,7 +34,7 @@ public class WeaponBox : MonoBehaviour
     {
         // Initialize main camera reference and spotlight color
         mainCamera = Camera.main;
-        spotlight.color = Color.green; // Initial color of the spotlight
+        spotlight.color = Color.green; 
     }
 
     private void Update()

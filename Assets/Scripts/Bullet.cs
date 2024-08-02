@@ -32,6 +32,13 @@ public class Bullet : MonoBehaviour
             print("hit " + collision.gameObject.name + " !");
             Destroy(gameObject);
         }
+
+        if (collision.gameObject.CompareTag("Enviroment"))
+        {
+            CreateBulletImpactEffect(collision, GlobalReferences.Instance.bulletImpacteffectWall);
+            print("hit " + collision.gameObject.name + " !");
+            Destroy(gameObject);
+        }
     }
 
     void CreateBulletImpactEffect(Collision collision, GameObject impactEffectPrefab)

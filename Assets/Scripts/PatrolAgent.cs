@@ -26,15 +26,20 @@ public class PatrolAgent : MonoBehaviour
 
     [Tooltip("Array of waypoints for patrolling.")]
     public Transform[] waypoints; // Array of waypoints for the agent to patrol
+
+    [Tooltip("Audio clip to play when the agent dies.")]
+    public AudioClip deathSound; // Death sound clip
     #endregion
 
     #region Private Fields
     private NavMeshAgent agent;
     private Animator animator;
-    private int hitCount = 0; 
-    private bool isWaiting = false; 
+    private AudioSource audioSource;
+    private int hitCount = 0;
+    private bool isWaiting = false;
     private int currentWaypointIndex = 0;
     private Vector3 initialPosition;
+    private Image healthBarBackground;
     #endregion
 
     #region Unity Methods
@@ -42,6 +47,8 @@ public class PatrolAgent : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
+        audioSource = GetComponent<AudioSource>();
+        healthBarBackground = healthBar.transform.Find("Background").GetComponent<Image>(); // Get the health bar background image
         InitializeHealthBar(); // Initialize the health bar
         initialPosition = transform.position; // Store the initial position
         MoveToNextWaypoint(); // Start patrolling
@@ -113,17 +120,44 @@ public class PatrolAgent : MonoBehaviour
         }
     }
 
+    public void HitByGrenade(float damage)
+    {
+        hitCount += Mathf.CeilToInt(damage); // Increment hit counter based on damage
+        if (hitCount >= maxHits)
+        {
+            StartCoroutine(HandleDeath()); // Handle death if max hits reached
+        }
+        else
+        {
+            UpdateHealthBar(); // Update health bar if not dead
+        }
+        healthBarBackground.color = GetRandomColorExcludingRedAndGreen(); // Change health bar background to a random color but not red
+    }
+
+    private Color GetRandomColorExcludingRedAndGreen()
+    {
+        Color randomColor;
+        do
+        {
+            randomColor = new Color(Random.value, Random.value, Random.value);
+        } while ((randomColor.r > 0.5f && randomColor.g < 0.5f && randomColor.b < 0.5f) || // Check if the color is too close to red
+                (randomColor.r < 0.5f && randomColor.g > 0.5f && randomColor.b < 0.5f)); // Check if the color is too close to green
+        return randomColor;
+    }
+
     private IEnumerator HandleDeath()
     {
         StopAllCoroutines(); // Stop all running coroutines
         agent.isStopped = true; // Stop the agent's movement
         animator.SetBool("isWalking", false); // Stop walking animation
         animator.Rebind(); // Reset animator state
+        audioSource.PlayOneShot(deathSound); // Play death sound
 
         isWaiting = false; // Reset the waiting flag
 
         ResetAgentPosition(); // Reset agent position
         hitCount = 0; // Reset hit count
+        healthBarBackground.color = Color.red; // Reset health bar background to red
         UpdateHealthBar(); // Reset health bar
 
         yield return new WaitForSeconds(1f); // Delay before respawning
@@ -147,6 +181,7 @@ public class PatrolAgent : MonoBehaviour
         healthBar.maxValue = maxHits; // Set max value of health bar
         healthBar.minValue = 0; // Set min value of health bar
         healthBar.value = maxHits; // Start with full health
+        healthBarBackground.color = Color.red; // Set initial background color to red
     }
 
     private void UpdateHealthBar()
@@ -156,9 +191,9 @@ public class PatrolAgent : MonoBehaviour
         // Make the health bar face the camera
         Vector3 directionToCamera = mainCamera.transform.position - healthBarCanvas.position;
         directionToCamera.x = directionToCamera.z = 0;
-        healthBarCanvas.LookAt(mainCamera.transform.position - directionToCamera); 
+        healthBarCanvas.LookAt(mainCamera.transform.position - directionToCamera);
 
-        healthBarCanvas.Rotate(0, 180, 0);
+        healthBarCanvas.Rotate(0, 0, 0);
     }
     #endregion
 }

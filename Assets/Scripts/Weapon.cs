@@ -56,7 +56,7 @@ public class Weapon : MonoBehaviour
         MachineGun,
     }
 
-    private bool allowReset = true;
+    
     private bool hasPlayedEmptySound = false;
     private AnimationController animatorController;
 
@@ -202,7 +202,6 @@ public class Weapon : MonoBehaviour
     private void ResetShot()
     {
         readyToShoot = true;
-        allowReset = true;
         animatorController.SetShooting(false);
     }
 
